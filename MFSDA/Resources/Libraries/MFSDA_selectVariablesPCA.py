@@ -51,6 +51,7 @@ def run_pc_score(args):
 				covariates_group[i][j]=1
 			if covariates_group[i][j]=='no':
 				covariates_group[i][j]=0
+			covariates_group[i][j] = covariates_group[i][j].replace('\r', '')
 			covariates_group[i][j] = float(covariates_group[i][j])
 	covariates_group = np.array(covariates_group)
 	num_components=int(args.num_components);
@@ -59,7 +60,7 @@ def run_pc_score(args):
 	covariates_group_n=normalized.transpose()
 	pear=[]
 	pval=[]
-	pval_withoutcov=[]
+	pval_pear=[]
 	[Dir, ext]=path.splitext(args.output)
 	if not path.exists(args.output):
 		diroutput = args.output
@@ -68,18 +69,18 @@ def run_pc_score(args):
 		diroutput = args.output
 	pathPdf=path.join(diroutput, 'Plot_covariates_for_each_patient.pdf')
 	pdf=PdfPages(pathPdf)
-	plt.figure(figsize=(13,7.5))
-	plt.title('Linear representation of the covariates')
+	plt.figure(figsize=(17,13))
+	# plt.title('Scatter plot of the covariates')
 	for num_c in range(0,covariates_group_size[1]):
-		plt.plot(covariates_group_n[num_c], label=covariates[num_c])
+		plt.plot(covariates_group_n[num_c], label=covariates[num_c], marker='o', linestyle='')
 		pear.append([])
 		pval.append([])
-		pval_withoutcov.append([])
+		pval_pear.append([])
 		for num in range(0,covariates_group_size[1]):
 			[pe,pv]=scipy.stats.pearsonr(covariates_group[:,num_c],covariates_group[:,num])
 			pear[num_c].append(pe)
 			pval[num_c].append(pv)
-			pval_withoutcov[num_c].append(pv)
+			pval_pear[num_c].append([pe,pv])
 	plt.legend(bbox_to_anchor=(0., 1., 1., 0.), loc=3,
 		   ncol=3, mode="expand", borderaxespad=0.)
 	plt.xlabel('patientId')
@@ -87,10 +88,10 @@ def run_pc_score(args):
 	# plt.show()
 	
 	pear=np.array(pear).tolist()
-	pval_withoutcov=np.array(pval_withoutcov).tolist()
-	plt.figure(figsize=(13,7.5))
+	pval_pear=np.array(pval_pear).tolist()
+	plt.figure(figsize=(13,8))
 	plt.title('Pearson Correlation')
-	c = plt.pcolor(pear, edgecolors='k', linewidths=4, cmap='RdBu', vmin=0.0, vmax=1.0)
+	c = plt.pcolor(pear, edgecolors='k', linewidths=4, cmap='RdBu', vmin=-1.0, vmax=1.0)
 	c.update_scalarmappable()
 	ax = c.axes
 	fmt="%.3f"
@@ -116,7 +117,7 @@ def run_pc_score(args):
 	plt.yticks(posy, covariates)
 	pdf.savefig()
 	# plt.show()
-	plt.figure(figsize=(13,7.5))
+	plt.figure(figsize=(13,8))
 	plt.title('p-values')
 	bounds = [0.0, 0.01, 0.05, 0.050000001, 1]
 	cmap=matplotlib.colors.ListedColormap(['r', (1.0, 1.0, 0.0), 'g', 'b'])
@@ -140,14 +141,14 @@ def run_pc_score(args):
 	plt.yticks(posy, covariates)
 	pdf.savefig()
 	# plt.show()
-	pdf.close()
+	# pdf.close()
 
 
 
 	pca = PCA(n_components=num_components)  # nombre d'axe qu'on veut !
 	
 
-	test=sklearn.preprocessing.normalize(covariates_group - X_)
+	covariates_group=sklearn.preprocessing.normalize(covariates_group - X_)
 	X_pca = pca.fit_transform(covariates_group)  # X toutes les covariates et X_ mean !
 	percentage_ratio = pca.explained_variance_ratio_
 	print('ratio', pca.explained_variance_ratio_)
@@ -159,10 +160,46 @@ def run_pc_score(args):
 		pearsoncorr.append([])
 		for i in range(covariates_group_size[1]):
 			pearsoncorr[num_c].append(scipy.stats.pearsonr(X_pca[:,num_c],covariates_group[:,i]))
-			[pearson_coef,pvalues]=scipy.stats.pearsonr(X_pca[:,num_c],covariates_group[:,i])
+			# [pearson_coef,pvalues]=scipy.stats.pearsonr(X_pca[:,num_c],covariates_group[:,i])
 
 	pearsoncorr = np.array(pearsoncorr)
 	print("pearsoncorr", pearsoncorr)
+
+	plt.figure(figsize=(13,8))
+	plt.title('PCA correlation')
+	c = plt.pcolor(pearsoncorr[:,:,0], edgecolors='k', linewidths=4, cmap='RdBu', vmin=-1.0, vmax=1.0)
+	c.update_scalarmappable()
+	ax = c.axes
+	fmt="%.3f"
+	for p, color, value in zip(c.get_paths(), c.get_facecolors(), c.get_array()):
+		x, y = p.vertices[:-2, :].mean(0)
+		if np.all(color[:3] > 0.5):
+			color = (0.0, 0.0, 0.0)
+		else:
+			color = (1.0, 1.0, 1.0)
+		ax.text(x, y, fmt % value, ha="center", va="center", color=color)
+	plt.colorbar(c)
+	plt.gca().invert_yaxis()
+	posx = []
+	xc = 0.5
+	
+	for c in covariates:
+		posx.append(xc)
+		xc += 1
+
+	posy=[]
+	yc = 0.5
+	pca_legend = []
+	for pca in range(len(pearsoncorr)):
+		pca_legend.append("PCA " + str(pca + 1))
+		posy.append(yc)
+		yc += 1
+
+	plt.xticks(posx, covariates, rotation=45)
+	plt.yticks(posy, pca_legend)
+	pdf.savefig()
+	pdf.close()
+
 	outcorrpca = {}
 	outcorrpca["covariates"] = covariates.tolist()
 	outcorrpca["pca"] = X_pca.tolist()
@@ -207,7 +244,7 @@ def run_pc_score(args):
 	pathcsvFirst=path.join(diroutput, 'pearsonFirst.csv')
 	pathcsvFirst_Pval=path.join(diroutput, 'pvaluesFirst.csv')
 	percentage_num_component = path.join(diroutput, 'percentage.csv')
-	outcovariates["pearsoncorr"] = pval_withoutcov
+	outcovariates["pearsoncorr"] = pval_pear
 	with open(percentage_num_component, 'w') as csv_file:
 		writer = csv.writer(csv_file)
 		writer.writerow(percentage_ratio)
