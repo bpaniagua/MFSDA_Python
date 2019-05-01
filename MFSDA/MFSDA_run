@@ -36,7 +36,7 @@ parser.add_argument('--shapeData', type=str, help='Text file list with vtk filen
 parser.add_argument('--coordData', type=str, help='filename, .vtk shape template', required=True)
 parser.add_argument('--covariate', type=str, help='filename, with covariates dim = n x p0 (comma separated or tabulation, without header)', required=True)
 #parser.add_argument('--covariateInterest', type=str, help='filename (dim = 1xp0 vector comma separated, 1 or 0 value to indicate/activate covariate of interest)', required=True)
-#parser.add_argument('--covariateType', help='filename, dim=1xsum(covariateInterest) vector comma separated, 1 or 0 to indicate type of covariate double or int', required=True)
+parser.add_argument('--covariateType', help='filename, dim=1xsum(covariateInterest) vector comma separated, 1 or 0 to indicate type of covariate double or int')
 parser.add_argument('--outputDir', help='output directory', default='./output')
 
 def run_script(args):
