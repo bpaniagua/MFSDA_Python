@@ -51,8 +51,13 @@ def run_pc_score(args):
 				covariates_group[i][j]=1
 			if covariates_group[i][j]=='no':
 				covariates_group[i][j]=0
-			covariates_group[i][j] = covariates_group[i][j].replace('\r', '')
+			if(isinstance(covariates_group[i][j], str)):
+				try:
+					covariates_group[i][j] = covariates_group[i][j].replace('\r', '')
+				except Exception:
+					pass
 			covariates_group[i][j] = float(covariates_group[i][j])
+
 	covariates_group = np.array(covariates_group)
 	num_components=int(args.num_components);
 	X_ = np.mean(covariates_group, axis=0)
