@@ -203,6 +203,19 @@ def run_pc_score(args):
 	plt.xticks(posx, covariates, rotation=45)
 	plt.yticks(posy, pca_legend)
 	pdf.savefig()
+
+
+	plt.figure(figsize=(10,8))
+	plt.title('PCA explained variance')
+	ticks = ['C' + str(c + 1) for c in range(len(percentage_ratio))]
+	plt.bar(range(len(percentage_ratio)), percentage_ratio, tick_label=ticks)
+	plt.xlabel('Components')
+	
+	for x, y in zip(range(len(percentage_ratio)), percentage_ratio):
+		plt.text(x, y, "%0.2f" % (y,), ha="center", va="center")
+
+	pdf.savefig()
+
 	pdf.close()
 
 	outcorrpca = {}
