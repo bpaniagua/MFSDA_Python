@@ -290,6 +290,10 @@ def run_pc_score(args):
 		json.dump(outcorrpca, outfile)
 	with open(path.join(diroutput, "pvaluesFirst.json"), "w") as outfile:
 		json.dump(outcovariates, outfile)
+	with open(path.join(diroutput, "percentage.json"), "w") as outfile:
+		percentage_ratio_obj = {}
+		percentage_ratio_obj["percentage_ratio"] = percentage_ratio.tolist()
+		json.dump(percentage_ratio_obj, outfile)
 	# with open(path.join(diroutput, "pvaluesFirst.json"), "w") as outfile:
 	# 	json.dump(outcorrpca, outfile)
 	
