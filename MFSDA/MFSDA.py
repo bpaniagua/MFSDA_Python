@@ -120,7 +120,7 @@ class MFSDAWidget(ScriptedLoadableModuleWidget):
             self.checkThreadTimer.stop()
             self.checkThreadTimer.disconnect('timeout()', self.onShapeState)
 
-            CSVFile=open(self.lineEdit_output.directory+'/output.csv', 'wb')
+            CSVFile=open(self.lineEdit_output.directory+'/output.csv', 'w')
             Data=['VTK Files']
             with CSVFile:
                 writer = csv.writer(CSVFile)
@@ -131,9 +131,9 @@ class MFSDAWidget(ScriptedLoadableModuleWidget):
             self.pushButton_run.connect('clicked(bool)', self.onCSVFile)
             self.pushButton_run.disconnect('clicked(bool)', self.onKillComputationShape)
             parameters = {}
-            parameters["CSVFile"] = self.lineEdit_output.directory+'/output.csv'
-            module = slicer.modules.shapepopulationviewer
-            slicer.cli.run(module, None, parameters, wait_for_completion=True)
+            csvFilePath = self.lineEdit_output.directory+'/output.csv'
+            slicer.modules.shapepopulationviewer.widgetRepresentation().loadCSVFile(csvFilePath)
+            slicer.util.selectModule(slicer.modules.shapepopulationviewer)
 
 
         return
@@ -319,10 +319,9 @@ class MFSDAWidget(ScriptedLoadableModuleWidget):
             writer.writerow(Data)
             writer.writerow([self.lineEdit_ShapePvalue.currentPath])
         CSVFile.close()
-        parameters = {}
-        parameters["CSVFile"] = self.lineEdit_output.directory+'/output.csv'
-        module = slicer.modules.shapepopulationviewer
-        slicer.cli.run(module, None, parameters, wait_for_completion=True)
+        csvFilePath = self.lineEdit_output.directory+'/output.csv'
+        slicer.modules.shapepopulationviewer.widgetRepresentation().loadCSVFile(csvFilePath)
+        slicer.util.selectModule(slicer.modules.shapepopulationviewer)
 
         return
 
@@ -346,10 +345,9 @@ class MFSDAWidget(ScriptedLoadableModuleWidget):
             writer.writerow(Data)
             writer.writerow([self.lineEdit_ShapePvalue.currentPath])
         CSVFile.close()
-        parameters = {}
-        parameters["CSVFile"] = self.lineEdit_output.directory+'/output.csv'
-        module = slicer.modules.shapepopulationviewer
-        slicer.cli.run(module, None, parameters, wait_for_completion=True)'''
+        csvFilePath = self.lineEdit_output.directory+'/output.csv'
+        slicer.modules.shapepopulationviewer.widgetRepresentation().loadCSVFile(csvFilePath)
+        slicer.util.selectModule(slicer.modules.shapepopulationviewer)'''
             
 
 
@@ -416,7 +414,7 @@ class MFSDALogic(ScriptedLoadableModuleLogic):
         """Function to add a group of the dictionary
         - Add the paths of all the vtk files found in the directory given 
         of a dictionary which will be used to create the CSV file"""
-        directory = self.directoryButton_creationCSVFile.directory.encode('utf-8')
+        directory = self.directoryButton_creationCSVFile.directory
         if directory in self.directoryList:
             index = self.directoryList.index(directory) + 1
             slicer.util.errorDisplay('Path of directory already used for the group ' + str(index))
@@ -512,7 +510,11 @@ class MFSDALogic(ScriptedLoadableModuleLogic):
         if file_extension == '.csv':
             delimiter=','
 
-        design_data = np.loadtxt(design_data_file_name, delimiter=delimiter)
+        design_data_tmp = np.loadtxt(design_data_file_name, delimiter=delimiter)
+        if len(design_data_tmp.shape) == 1:
+            design_data = np.reshape(design_data_tmp, (design_data_tmp.shape[0], 1))
+        else:
+            design_data = design_data_tmp
 
         # read the covariate type
         var_type_file_name = args.covariateType
@@ -651,17 +653,16 @@ class MFSDATest(ScriptedLoadableModuleTest):
         outputPath=output_directory+'/out.vtk'
         argShapes=arguments(pvalues=pvaluesPath, covariates=CovariateNames_currentPath, shape=ShapePvalue_currentPath, efit=efitPath, output=outputPath)
         self.run_Shape(argShapes)
-        CSVFile=open(output_directory+'/output.csv', 'wb')
+        CSVFile=open(output_directory+'/output.csv', 'w')
         Data=['VTK Files']
         with CSVFile:
             writer = csv.writer(CSVFile)
             writer.writerow(Data)
             writer.writerow([ShapePvalue_currentPath])
         CSVFile.close()
-        parameters = {}
-        parameters["CSVFile"] = output_directory+'/output.csv'
-        module = slicer.modules.shapepopulationviewer
-        slicer.cli.run(module, None, parameters, wait_for_completion=True)
+        csvFilePath = self.lineEdit_output.directory+'/output.csv'
+        slicer.modules.shapepopulationviewer.widgetRepresentation().loadCSVFile(csvFilePath)
+        slicer.util.selectModule(slicer.modules.shapepopulationviewer)
 
     def run_script(self, args):
         """
@@ -735,7 +736,12 @@ class MFSDATest(ScriptedLoadableModuleTest):
         if file_extension == '.csv':
             delimiter=','
 
-        design_data = np.loadtxt(design_data_file_name, delimiter=delimiter)
+        design_data_tmp = np.loadtxt(design_data_file_name, delimiter=delimiter)
+        if len(design_data_tmp.shape) == 1:
+            design_data = np.reshape(design_data_tmp, (design_data_tmp.shape[0], 1))
+        else:
+            design_data = design_data_tmp
+    
 
         # read the covariate type
         var_type_file_name = args.covariateType
