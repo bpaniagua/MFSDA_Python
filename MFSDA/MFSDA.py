@@ -77,25 +77,19 @@ class MFSDAWidget(ScriptedLoadableModuleWidget):
         self.stateCSVMeansShape = False
         self.dictShapeModels = dict()
         
-        self.lineEdit_vtk = self.logic.get('lineEdit_vtk')
+        self.lineEdit_csv = self.logic.get('lineEdit_csv')
+        self.tableWidget = self.logic.get('tableWidget')
         self.lineEdit_template = self.logic.get('lineEdit_template')
-        self.lineEdit_covariate = self.logic.get('lineEdit_covariate')
-        #self.lineEdit_covariateType = self.logic.get('lineEdit_covariateType')
+        self.lineEdit_pshape = self.logic.get('lineEdit_pshape')
         self.lineEdit_output = self.logic.get('lineEdit_output')
 
         self.pushButton_run = self.logic.get('pushButton_run')
-        # self.apply_button=self.logic.get('Apply_Button')
-        self.lineEdit_CovariateNames = self.logic.get('lineEdit_CovariateNames')
-        self.lineEdit_ShapePvalue=self.logic.get('lineEdit_ShapePvalue')
 
         '''
-        self.lineEdit_covariateType.connect('currentPathChanged(const QString)', self.onCSVFile)
-        self.lineEdit_covariate.connect('currentPathChanged(const QString)', self.onCSVFile)
         self.lineEdit_template.connect('currentPathChanged(const QString)', self.onCSVFile)
-        self.lineEdit_vtk.connect('currentPathChanged(const QString)', self.onCSVFile)
-        self.lineEdit_output.connect('directoryChanged (const QString)', self.onCSVFile)
-        self.lineEdit_ShapePvalue.connect('directoryChanged (const QString)', self.onCSVFile)
-        self.lineEdit_CovariateNames.connect('directoryChanged (const QString)', self.onCSVFile)'''        
+        self.lineEdit_csv.connect('currentPathChanged(const QString)', self.onCSVFile)
+        self.lineEdit_output.connect('directoryChanged (const QString)', self.onCSVFile)'''    
+        self.lineEdit_csv.connect('currentPathChanged(const QString)', self.onCSVFile)
         self.pushButton_run.connect('clicked(bool)', self.onCSVFile)
 
 
@@ -125,7 +119,7 @@ class MFSDAWidget(ScriptedLoadableModuleWidget):
             with CSVFile:
                 writer = csv.writer(CSVFile)
                 writer.writerow(Data)
-                writer.writerow([self.lineEdit_ShapePvalue.currentPath])
+                writer.writerow([self.lineEdit_output.directory + '/out.vtk'])
             CSVFile.close()
             self.pushButton_run.setText("Run")
             self.pushButton_run.connect('clicked(bool)', self.onCSVFile)
@@ -172,11 +166,15 @@ class MFSDAWidget(ScriptedLoadableModuleWidget):
             print('MFSDA Computation done')
             self.checkThreadTimer.stop()
 
+            # Read covariate names from first line of csv
+            f = open(self.lineEdit_csv.currentPath)
+            covariate_names = [ x.strip() for x in f.readline().split(',')[1:] ]
+
             self.param = {}
-            self.param["shape"] = self.lineEdit_ShapePvalue.currentPath
+            self.param["shape"] = self.lineEdit_pshape.currentPath
             self.param["pvalues"] = self.lineEdit_output.directory+'/pvalues.json'
             self.param["efit"] = self.lineEdit_output.directory+'/efit.json'
-            self.param["covariates"] = self.lineEdit_CovariateNames.currentPath
+            self.param["covariates"] = ' '.join(covariate_names)
             self.param["output"] = self.lineEdit_output.directory+'/out.vtk'
 
             MFSDAShapemodule = slicer.modules.mfsda_createshapes
@@ -205,90 +203,82 @@ class MFSDAWidget(ScriptedLoadableModuleWidget):
         print('Computation Stopped after '+str(minutes)+' min')
 
     def onCSVFile(self):
-        print('coucou')
         self.dictShapeModels = dict()
         '''if not os.path.exists(self.lineEdit_covariateType.currentPath):
             self.stateCSVMeansShape = False
             return'''
-        if not os.path.exists(self.lineEdit_covariate.currentPath):
+        if not os.path.exists(self.lineEdit_csv.currentPath):
             self.stateCSVMeansShape = False
+            self.tableWidget.clearContents()
+            self.tableWidget.setRowCount(0)
             return
+        
+        condition1 = self.logic.checkExtension(self.lineEdit_csv.currentPath, ".csv")
+
+        if condition1:
+            f = open(self.lineEdit_csv.currentPath)
+            headers = [ x.strip() for x in f.readline().split(',') ]
+            self.tableWidget.setColumnCount(len(headers))
+            self.tableWidget.setHorizontalHeaderLabels(headers)
+            row = 0
+            for line in f.readlines():
+                vals = [ x.strip() for x in line.split(',') ]
+                self.tableWidget.insertRow(row)
+                for col in range(len(vals)):
+                    widget = qt.QWidget()
+                    layout = qt.QHBoxLayout(widget)
+                    label = qt.QLabel()
+                    label.setText(vals[col])
+                    
+                    layout.addWidget(label)
+                    layout.setAlignment(0x84)
+                    layout.setContentsMargins(0,0,0,0)
+                    widget.setLayout(layout)
+                    self.tableWidget.setCellWidget(row,col,widget)
+                row = row + 1
+        else:
+            self.lineEdit_csv.setCurrentPath(" ")
+            self.stateCSVDataset = False
+            self.tableWidget.clearContents()
+            self.tableWidget.setRowCount(0)
+            return
+
         if not os.path.exists(self.lineEdit_template.currentPath):
-            self.stateCSVMeansShape = False
-            return
-        if not os.path.exists(self.lineEdit_vtk.currentPath):
             self.stateCSVMeansShape = False
             return
         if not os.path.exists(self.lineEdit_output.directory):
             self.stateCSVMeansShape = False
             return
-        if not os.path.exists(self.lineEdit_ShapePvalue.currentPath):
-            self.stateCSVMeansShape = False
-            return
         """if not os.path.exists(self.lineEdit_CovariateNames.currentPath):
             self.stateCSVMeansShape = False
             return"""
-        condition1 = self.logic.checkExtension(self.lineEdit_vtk.currentPath, ".txt")
+        
         condition2 = self.logic.checkExtension(self.lineEdit_template.currentPath, ".vtk")
-        condition3 = self.logic.checkExtension(self.lineEdit_covariate.currentPath, ".csv")
-        #condition4 = self.logic.checkExtension(self.lineEdit_covariateType.currentPath, ".csv")
-        condition5= self.lineEdit_output.directory!='.'
-        condition6 = self.logic.checkExtension(self.lineEdit_ShapePvalue.currentPath, ".vtk")
-        condition7= self.lineEdit_CovariateNames.currentPath!='.'
+        condition3 = self.lineEdit_output.directory != '.'
 
-        if not condition1:
-            self.lineEdit_vtk.setCurrentPath(" ")
-            self.stateCSVDataset = False
-            return
         if not condition2:
             self.lineEdit_template.setCurrentPath(" ")
             self.stateCSVDataset = False
             return
         if not condition3:
-            self.lineEdit_covariate.setCurrentPath(" ")
             self.stateCSVDataset = False
             return
-        '''if not condition4:
-            self.lineEdit_covariateType.setCurrentPath(" ")
-            self.stateCSVDataset = False
-            return'''
-        if not condition5:
-            #self.lineEdit_output.setDirectory(" ")
-            self.stateCSVDataset = False
-            return
-        if not condition6:
-            self.lineEdit_ShapePvalue.setCurrentPath(" ")
-            self.stateCSVDataset = False
-            return
-        '''if not condition7:
-            self.lineEdit_CovariateNames.setCurrentPath(" ")
-            self.stateCSVDataset = False
-            return'''
-        PathOutput=os.path.dirname(self.lineEdit_vtk.currentPath)+'/'
+        PathOutput=os.path.dirname(self.lineEdit_csv.currentPath)+'/'
 
-        # print('bouton !!!!',self.apply_button.clicked())
-        #print(self.lineEdit_covariateType.currentPath)
-        print(self.lineEdit_covariate.currentPath)
         print(self.lineEdit_template.currentPath)
-        print(self.lineEdit_vtk.currentPath)
-        print(self.lineEdit_output.directory)
-        print(self.lineEdit_ShapePvalue.currentPath)
-        print(self.lineEdit_CovariateNames.currentPath)        
+        print(self.lineEdit_csv.currentPath)
+        print(self.lineEdit_output.directory) 
         print(PathOutput)
 
-
-
         self.param = {}
-        self.param["shapeData"] = self.lineEdit_vtk.currentPath
+        self.param["shapeData"] = self.lineEdit_csv.currentPath
         self.param["coordData"] = self.lineEdit_template.currentPath
-        self.param["covariate"] = self.lineEdit_covariate.currentPath
-        #self.param["covariateType"] = self.lineEdit_covariateType.currentPath
         self.param["outputDir"] = self.lineEdit_output.directory
 
 
-        self.starting_time=time.time()
+        self.starting_time = time.time()
         MFSDAmodule = slicer.modules.mfsda_run
-        self.MFSDAThread=slicer.cli.run(MFSDAmodule, None, self.param, wait_for_completion=False)
+        self.MFSDAThread = slicer.cli.run(MFSDAmodule, None, self.param, wait_for_completion=False)
 
 
         self.checkThreadTimer=qt.QTimer()
@@ -301,7 +291,7 @@ class MFSDAWidget(ScriptedLoadableModuleWidget):
         return
  
         '''        self.param = {}
-        self.param["shape"] = self.lineEdit_ShapePvalue.currentPath
+        self.param["shape"] = self.lineEdit_pshape.currentPath
         self.param["pvalues"] = self.lineEdit_output.directory+'/pvalues.json'
         self.param["efit"] = self.lineEdit_output.directory+'/efit.json'
         self.param["covariates"] = self.lineEdit_CovariateNames.currentPath
@@ -317,7 +307,7 @@ class MFSDAWidget(ScriptedLoadableModuleWidget):
         with CSVFile:
             writer = csv.writer(CSVFile)
             writer.writerow(Data)
-            writer.writerow([self.lineEdit_ShapePvalue.currentPath])
+            writer.writerow([self.lineEdit_pshape.currentPath])
         CSVFile.close()
         csvFilePath = self.lineEdit_output.directory+'/output.csv'
         slicer.modules.shapepopulationviewer.widgetRepresentation().loadCSVFile(csvFilePath)
@@ -326,15 +316,15 @@ class MFSDAWidget(ScriptedLoadableModuleWidget):
         return
 
 
-        args=arguments(coordData=self.lineEdit_template.currentPath, covariate=self.lineEdit_covariate.currentPath, covariateType=self.lineEdit_covariateType.currentPath, outputDir=self.lineEdit_output.directory, shapeData=self.lineEdit_vtk.currentPath, shapePath=PathOutput)
+        args=arguments(coordData=self.lineEdit_template.currentPath, covariate=self.lineEdit_covariate.currentPath, covariateType=self.lineEdit_covariateType.currentPath, outputDir=self.lineEdit_output.directory, shapeData=self.lineEdit_csv.currentPath, shapePath=PathOutput)
         self.logic.run_script(args)
 
 
         pvaluesPath=self.lineEdit_output.directory+'/pvalues.json'
         efitPath=self.lineEdit_output.directory+'/efit.json'
-        ShapePvalue=self.lineEdit_ShapePvalue.currentPath
+        pshape=self.lineEdit_pshape.currentPath
         outputPath=self.lineEdit_output.directory+'/out.vtk'
-        argShapes=arguments(pvalues=pvaluesPath, covariates=self.lineEdit_CovariateNames.currentPath, shape=self.lineEdit_ShapePvalue.currentPath, efit=efitPath, output=outputPath)
+        argShapes=arguments(pvalues=pvaluesPath, covariates=self.lineEdit_CovariateNames.currentPath, shape=self.lineEdit_pshape.currentPath, efit=efitPath, output=outputPath)
         self.logic.run_Shape(argShapes)
 
 
@@ -343,7 +333,7 @@ class MFSDAWidget(ScriptedLoadableModuleWidget):
         with CSVFile:
             writer = csv.writer(CSVFile)
             writer.writerow(Data)
-            writer.writerow([self.lineEdit_ShapePvalue.currentPath])
+            writer.writerow([self.lineEdit_pshape.currentPath])
         CSVFile.close()
         csvFilePath = self.lineEdit_output.directory+'/output.csv'
         slicer.modules.shapepopulationviewer.widgetRepresentation().loadCSVFile(csvFilePath)
@@ -642,23 +632,23 @@ class MFSDATest(ScriptedLoadableModuleTest):
         output_directory='/Users/loicmichoud/Desktop/MySlicerExtensions/output'
         covariate_currentPath='/Users/loicmichoud/Desktop/MFSDA_Python/TEST/covariate.csv'
         covariateType_currentPath='/Users/loicmichoud/Desktop/MFSDA_Python/TEST/covariateType.csv'
-        ShapePvalue_currentPath='/Users/loicmichoud/Desktop/ficher_test/01_Left_aligned.vtk'
+        pshape_currentPath='/Users/loicmichoud/Desktop/ficher_test/01_Left_aligned.vtk'
         CovariateNames_currentPath='/Users/loicmichoud/Desktop/MySlicerExtensions/MFSDA/MFSDA/covariate'
         PathOutput=os.path.dirname(vtk_currentPath)+'/'
         args=arguments(coordData=template_currentPath, covariate=covariate_currentPath, covariateType=covariateType_currentPath, outputDir=output_directory, shapeData=vtk_currentPath, shapePath=PathOutput)
         self.run_script(args)
         pvaluesPath=output_directory+'/pvalues.json'
         efitPath=output_directory+'/efit.json'
-        ShapePvalue=ShapePvalue_currentPath
+        pshape=pshape_currentPath
         outputPath=output_directory+'/out.vtk'
-        argShapes=arguments(pvalues=pvaluesPath, covariates=CovariateNames_currentPath, shape=ShapePvalue_currentPath, efit=efitPath, output=outputPath)
+        argShapes=arguments(pvalues=pvaluesPath, covariates=CovariateNames_currentPath, shape=pshape_currentPath, efit=efitPath, output=outputPath)
         self.run_Shape(argShapes)
         CSVFile=open(output_directory+'/output.csv', 'w')
         Data=['VTK Files']
         with CSVFile:
             writer = csv.writer(CSVFile)
             writer.writerow(Data)
-            writer.writerow([ShapePvalue_currentPath])
+            writer.writerow([pshape_currentPath])
         CSVFile.close()
         csvFilePath = self.lineEdit_output.directory+'/output.csv'
         slicer.modules.shapepopulationviewer.widgetRepresentation().loadCSVFile(csvFilePath)
