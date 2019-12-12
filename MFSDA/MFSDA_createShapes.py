@@ -32,7 +32,9 @@ def run_script(args):
         efit = json.load(data_file)
         efitbetas = np.array(efit['efitBetas'])
 
-    covariates = args.covariates
+    covariates = []
+    if args.covariates:
+        covariates = args.covariates[0].split()
 
     reader = vtk.vtkPolyDataReader()
     reader.SetFileName(args.shape)
