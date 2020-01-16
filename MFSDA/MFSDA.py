@@ -79,14 +79,13 @@ class MFSDAWidget(ScriptedLoadableModuleWidget):
         
         self.lineEdit_csv = self.logic.get('lineEdit_csv')
         self.tableWidget = self.logic.get('tableWidget')
-        self.lineEdit_template = self.logic.get('lineEdit_template')
         self.lineEdit_pshape = self.logic.get('lineEdit_pshape')
         self.lineEdit_output = self.logic.get('lineEdit_output')
 
         self.pushButton_run = self.logic.get('pushButton_run')
 
         '''
-        self.lineEdit_template.connect('currentPathChanged(const QString)', self.onCSVFile)
+        self.lineEdit_pshape.connect('currentPathChanged(const QString)', self.onCSVFile)
         self.lineEdit_csv.connect('currentPathChanged(const QString)', self.onCSVFile)
         self.lineEdit_output.connect('directoryChanged (const QString)', self.onCSVFile)'''    
         self.lineEdit_csv.connect('currentPathChanged(const QString)', self.onCSVFile)
@@ -243,7 +242,7 @@ class MFSDAWidget(ScriptedLoadableModuleWidget):
             self.tableWidget.setRowCount(0)
             return
 
-        if not os.path.exists(self.lineEdit_template.currentPath):
+        if not os.path.exists(self.lineEdit_pshape.currentPath):
             self.stateCSVMeansShape = False
             return
         if not os.path.exists(self.lineEdit_output.directory):
@@ -253,11 +252,11 @@ class MFSDAWidget(ScriptedLoadableModuleWidget):
             self.stateCSVMeansShape = False
             return"""
         
-        condition2 = self.logic.checkExtension(self.lineEdit_template.currentPath, ".vtk")
+        condition2 = self.logic.checkExtension(self.lineEdit_pshape.currentPath, ".vtk")
         condition3 = self.lineEdit_output.directory != '.'
 
         if not condition2:
-            self.lineEdit_template.setCurrentPath(" ")
+            self.lineEdit_pshape.setCurrentPath(" ")
             self.stateCSVDataset = False
             return
         if not condition3:
@@ -265,14 +264,9 @@ class MFSDAWidget(ScriptedLoadableModuleWidget):
             return
         PathOutput=os.path.dirname(self.lineEdit_csv.currentPath)+'/'
 
-        print(self.lineEdit_template.currentPath)
-        print(self.lineEdit_csv.currentPath)
-        print(self.lineEdit_output.directory) 
-        print(PathOutput)
-
         self.param = {}
         self.param["shapeData"] = self.lineEdit_csv.currentPath
-        self.param["coordData"] = self.lineEdit_template.currentPath
+        self.param["coordData"] = self.lineEdit_pshape.currentPath
         self.param["outputDir"] = self.lineEdit_output.directory
 
 
@@ -316,7 +310,7 @@ class MFSDAWidget(ScriptedLoadableModuleWidget):
         return
 
 
-        args=arguments(coordData=self.lineEdit_template.currentPath, covariate=self.lineEdit_covariate.currentPath, covariateType=self.lineEdit_covariateType.currentPath, outputDir=self.lineEdit_output.directory, shapeData=self.lineEdit_csv.currentPath, shapePath=PathOutput)
+        args=arguments(coordData=self.lineEdit_pshape.currentPath, covariate=self.lineEdit_covariate.currentPath, covariateType=self.lineEdit_covariateType.currentPath, outputDir=self.lineEdit_output.directory, shapeData=self.lineEdit_csv.currentPath, shapePath=PathOutput)
         self.logic.run_script(args)
 
 
