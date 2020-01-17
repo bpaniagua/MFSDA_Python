@@ -31,13 +31,19 @@ import json
 
 """installed all the libraries above"""
 
-parser = argparse.ArgumentParser(description='Multivariate Functional Shape Data Analysis (MFSDA)')
-parser.add_argument('--shapeData', type=str, help='Text file list with vtk filenames, 1 file per line', required=True)
-parser.add_argument('--coordData', type=str, help='filename, .vtk shape template', required=True)
-parser.add_argument('--covariate', type=str, help='filename, with covariates dim = n x p0 (comma separated or tabulation, without header)', required=True)
-#parser.add_argument('--covariateInterest', type=str, help='filename (dim = 1xp0 vector comma separated, 1 or 0 value to indicate/activate covariate of interest)', required=True)
-parser.add_argument('--covariateType', help='filename, dim=1xsum(covariateInterest) vector comma separated, 1 or 0 to indicate type of covariate double or int')
-parser.add_argument('--outputDir', help='output directory', default='./output')
+def main():
+    parser = argparse.ArgumentParser(description='Multivariate Functional Shape Data Analysis (MFSDA)')
+    parser.add_argument('--shapeData', type=str, help='Text file list with vtk filenames, 1 file per line', required=True)
+    parser.add_argument('--coordData', type=str, help='filename, .vtk shape template', required=True)
+    parser.add_argument('--outputDir', help='output directory', default='./output')
+
+    args = parser.parse_args()
+
+    start_all = timeit.default_timer()
+    run_script(args)
+    stop_all = timeit.default_timer()
+    delta_time_all = str(stop_all - start_all)
+    print("The total elapsed time is " + delta_time_all)
 
 def run_script(args):
     """
@@ -55,9 +61,16 @@ def run_script(args):
     nshape = 0
     numpoints = -1
 
-    for vtkfilename in fh.readlines():
-        print("Reading", vtkfilename)
-        vtkfilename = vtkfilename.rstrip()        
+    header = fh.readline()
+    toks = header.split(sep=',')
+    covs_tmp = []
+
+    for line in fh.readlines():
+        toks = line.strip().split(sep=',')
+
+        # Read VTK file
+        vtkfilename = toks[0].rstrip()
+        print("Reading {}".format(vtkfilename))
         reader = vtk.vtkPolyDataReader()
         reader.SetFileName(vtkfilename)
         reader.Update()
@@ -77,6 +90,9 @@ def run_script(args):
             y_design[nshape].append(p)
 
         nshape += 1
+
+        # Build covariate matrix
+        covs_tmp.append(toks[1:])
 
     y_design = np.array(y_design)
     y_design.reshape(nshape, numpoints, 3)
@@ -103,15 +119,8 @@ def run_script(args):
 
     coord_mat = np.array(coord_mat)        
 
-    print("+++++++Read the design matrix+++++++")
-    design_data_file_name = args.covariate
-    _ , file_extension = os.path.splitext(design_data_file_name)
-
-    delimiter = ' '
-    if file_extension == '.csv':
-        delimiter=','
-    
-    design_data = np.loadtxt(design_data_file_name, delimiter=delimiter)
+    # Set up design matrix
+    design_data = np.array(covs_tmp,dtype=float)
 
     # read the covariate type
     var_type = getCovariateType(design_data)
@@ -144,7 +153,6 @@ def run_script(args):
         json.dump(efit, outfile)
 
 
-
 def getCovariateType(design_data):
 
     (row,column)=design_data.shape
@@ -162,14 +170,5 @@ def getCovariateType(design_data):
     return cov_types
 
 
-
-
 if __name__ == '__main__':
-        
-    args = parser.parse_args()
-
-    start_all = timeit.default_timer()
-    run_script(args)
-    stop_all = timeit.default_timer()
-    delta_time_all = str(stop_all - start_all)
-    print("The total elapsed time is " + delta_time_all)
+    main()
