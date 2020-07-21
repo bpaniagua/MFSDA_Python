@@ -25,12 +25,6 @@ set(MODULE_PYTHON_RESOURCES
   MFSDA_createShapes.xml
   )
 
-
-
-
-find_package(Slicer REQUIRED)
-include(${Slicer_USE_FILE})
-
 #-----------------------------------------------------------------------------
 slicerMacroBuildScriptedModule(
   NAME ${MODULE_NAME}
