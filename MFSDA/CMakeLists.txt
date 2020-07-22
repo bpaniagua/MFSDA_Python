@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 3.12)
 
 #-----------------------------------------------------------------------------
 set(MODULE_NAME MFSDA)
@@ -25,12 +24,6 @@ set(MODULE_PYTHON_RESOURCES
   MFSDA_createShapes.py
   MFSDA_createShapes.xml
   )
-
-
-
-
-find_package(Slicer REQUIRED)
-include(${Slicer_USE_FILE})
 
 #-----------------------------------------------------------------------------
 slicerMacroBuildScriptedModule(
