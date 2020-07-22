@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Run script: multivariate functional shape data analysis (MFSDA).
-Usage: python ./MFSDA_run_script.py ./data/ ./result/
 
 Author: Chao Huang (chaohuang.stat@gmail.com)
 Last update: 2017-08-14
