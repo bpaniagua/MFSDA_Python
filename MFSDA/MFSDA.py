@@ -30,7 +30,7 @@ class MFSDA(ScriptedLoadableModule):
 
     def __init__(self, parent):
         ScriptedLoadableModule.__init__(self, parent)
-        self.parent.title = "Covariate Significance Testing" # TODO make this more human readable by adding spaces
+        self.parent.title = "MFSDA" # TODO make this more human readable by adding spaces
         self.parent.categories = ["Shape Analysis"]
         self.parent.dependencies = []
         self.parent.contributors = ["Loic Michoud"] # replace with "Firstname Lastname (Organization)"
