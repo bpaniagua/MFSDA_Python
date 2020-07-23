@@ -5,7 +5,7 @@ project(MFSDA)
 #-----------------------------------------------------------------------------
 # Extension meta-information
 set(EXTENSION_HOMEPAGE "https://github.com/DCBIA-OrthoLab/MFSDA_Python#readme")
-set(EXTENSION_CATEGORY "Statistics")
+set(EXTENSION_CATEGORY "Shape Analysis")
 set(EXTENSION_CONTRIBUTORS "Mateo Lopez (University of North Carolina), Juan Carlos Prieto (University of North Carolina) ")
 set(EXTENSION_DESCRIPTION "Modules for statistical shape analysis. A multivariate varying coefficient model is introduced to build the association between the multivariate shape measurements and demographic information and other clinical variables. Statistical inference, i.e., hypothesis testing, is also included in this package, which can be used in investigating whether some covariates of interest are significantly associated with the shape information. The hypothesis testing results are further used in clustering based analysis.")
 set(EXTENSION_ICONURL "https://raw.githubusercontent.com/DCBIA-OrthoLab/MFSDA_Python/master/MFSDA.png")
