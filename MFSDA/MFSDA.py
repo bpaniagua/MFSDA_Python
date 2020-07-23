@@ -5,21 +5,12 @@ import unittest
 import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
 import logging
-#import inputData
+
 import sys
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),os.path.join('Resources','Libraries')))
 import numpy as np
 from scipy import stats
-#from scipy.io import loadmat
-#from statsmodels.sandbox.stats.multicomp import fdrcorrection0
-#from stat_read_x import read_x
-#from stat_lpks import lpks
-#from stat_sif import sif
-#from stat_wald_ht import wald_ht
-#from stat_bstrp_pvalue import bstrp_pvalue
-# from sklearn.cluster import KMeans
-# from scipy.cluster.vq import kmeans2
-# from stat_gap import gap
+
 import MFSDA_stat as mfsda
 import timeit
 import argparse
@@ -283,80 +274,7 @@ class MFSDAWidget(ScriptedLoadableModuleWidget):
         self.pushButton_run.connect('clicked(bool)', self.onKillComputation)
 
         return
- 
-        '''        self.param = {}
-        self.param["shape"] = self.lineEdit_pshape.currentPath
-        self.param["pvalues"] = self.lineEdit_output.directory+'/pvalues.json'
-        self.param["efit"] = self.lineEdit_output.directory+'/efit.json'
-        self.param["covariates"] = self.lineEdit_CovariateNames.currentPath
-        self.param["output"] = self.lineEdit_output.directory+'/out.vtk'
 
-        MFSDAShapemodule = slicer.modules.MFSDA_createShapes
-        self.MFSDAShapeThread=slicer.cli.run(MFSDAShapemodule, None, self.param, wait_for_completion=False)
-
-        return
-
-        CSVFile=open(self.lineEdit_output.directory+'/output.csv', 'wb')
-        Data=['VTK Files']
-        with CSVFile:
-            writer = csv.writer(CSVFile)
-            writer.writerow(Data)
-            writer.writerow([self.lineEdit_pshape.currentPath])
-        CSVFile.close()
-        csvFilePath = self.lineEdit_output.directory+'/output.csv'
-        slicer.modules.shapepopulationviewer.widgetRepresentation().loadCSVFile(csvFilePath)
-        slicer.util.selectModule(slicer.modules.shapepopulationviewer)
-
-        return
-
-
-        args=arguments(coordData=self.lineEdit_pshape.currentPath, covariate=self.lineEdit_covariate.currentPath, covariateType=self.lineEdit_covariateType.currentPath, outputDir=self.lineEdit_output.directory, shapeData=self.lineEdit_csv.currentPath, shapePath=PathOutput)
-        self.logic.run_script(args)
-
-
-        pvaluesPath=self.lineEdit_output.directory+'/pvalues.json'
-        efitPath=self.lineEdit_output.directory+'/efit.json'
-        pshape=self.lineEdit_pshape.currentPath
-        outputPath=self.lineEdit_output.directory+'/out.vtk'
-        argShapes=arguments(pvalues=pvaluesPath, covariates=self.lineEdit_CovariateNames.currentPath, shape=self.lineEdit_pshape.currentPath, efit=efitPath, output=outputPath)
-        self.logic.run_Shape(argShapes)
-
-
-        CSVFile=open(self.lineEdit_output.directory+'/output.csv', 'wb')
-        Data=['VTK Files']
-        with CSVFile:
-            writer = csv.writer(CSVFile)
-            writer.writerow(Data)
-            writer.writerow([self.lineEdit_pshape.currentPath])
-        CSVFile.close()
-        csvFilePath = self.lineEdit_output.directory+'/output.csv'
-        slicer.modules.shapepopulationviewer.widgetRepresentation().loadCSVFile(csvFilePath)
-        slicer.util.selectModule(slicer.modules.shapepopulationviewer)'''
-            
-
-
-
-        # self.lineEdit_4.setCurrentPath(" ")
-        # Parameters Area
-        #
-    #     self.dictShapeModels = dict()
-
- #        # Check if the path exists:
- #        if not os.path.exists(self.lineEdit_4.currentPath):
- #            self.stateCSVDataset = False
- #            self.enableNetwork()
- #            # return
-
- #        # print("------ Selection of a Dataset ------")
- #        # Check if it's a CSV file
- #        condition1 = self.logic.checkExtension(self.lineEdit_4.currentPath, ".csv")
- #        if not condition1:
- #            self.lineEdit_4.setCurrentPath(" ")
- #            self.stateCSVDataset = False
- #            self.enableNetwork()
- #            # return
-    
-    
 
 #
 # MFSDALogic
@@ -602,18 +520,12 @@ class MFSDALogic(ScriptedLoadableModuleLogic):
         writer.SetFileName(args.output)
         writer.SetInputData(shapedata)
         writer.Update()
-        #     args = parser.parse_args()
-            
-        #     start_all = timeit.default_timer()
-        #     run_script(args)
-        #     stop_all = timeit.default_timer()
-        #     delta_time_all = str(stop_all - start_all)
-        #     print("The total elapsed time is " + delta_time_all)
+
 
 class arguments(object):
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)                
-    
+
 class MFSDATest(ScriptedLoadableModuleTest):
 
     def SetUp(self):

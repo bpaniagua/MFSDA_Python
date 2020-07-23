@@ -14,8 +14,6 @@ from stat_lpks_pre_bw import lpks_pre_bw
 from stat_sif import sif
 from stat_grs import grs
 from stat_wald_ht import wald_ht
-# from sklearn.cluster import KMeans
-# from stat_gap import gap
 
 """
 installed all the libraries above

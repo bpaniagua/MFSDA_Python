@@ -35,7 +35,6 @@ def read_x(var_matrix, var_type):
     for kk in range(p):
         if var_type[kk] == 1:
             mat_new[:, kk] = (mat[:, kk] - np.mean(mat[:, kk]))/np.std(mat[:, kk])
-            #  mat_new[:, kk] = mat[:, kk]/np.sqrt(np.sum(mat[:, kk]**2))
         else:
             mat_new[:, kk] = mat[:, kk]
     const = np.ones((n, 1))

@@ -11,16 +11,13 @@ import sys,os
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),os.path.join('Resources','Libraries')))
 import numpy as np
 from scipy import stats
-#from scipy.io import loadmat
 from statsmodels.sandbox.stats.multicomp import fdrcorrection0
 from stat_read_x import read_x
 from stat_lpks import lpks
 from stat_sif import sif
 from stat_wald_ht import wald_ht
 from stat_bstrp_pvalue import bstrp_pvalue
-# from sklearn.cluster import KMeans
-# from scipy.cluster.vq import kmeans2
-# from stat_gap import gap
+
 import MFSDA_stat as mfsda
 import timeit
 import vtk
