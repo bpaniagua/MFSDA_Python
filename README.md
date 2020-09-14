@@ -19,13 +19,84 @@ The project a Slicer loadable allowing to XXX that internally leverage invokes c
 
 | CLI Name           | Description |
 |--------------------|-------------|
-| [MFSDA_createShapes][MFSDA_createShapes]             | ??? |
-| [MFSDA_run][MFSDA_run]                               |  ??? |
 | [MFSDA_selectVariablesPCA][MFSDA_selectVariablesPCA] | Variable selection using Correlation with Principal Components. |
+| [MFSDA_run][MFSDA_run]                               | Main script to run the Multivariate Funcional Shape Data Analysis |
+| [MFSDA_createShapes][MFSDA_createShapes]             | After completion, add the pvalues/efit to a shape for visualization|
+
+
 
 [MFSDA_createShapes]: https://github.com/DCBIA-OrthoLab/MFSDA_Python/blob/master/MFSDA/MFSDA_createShapes.xml
 [MFSDA_run]: https://github.com/DCBIA-OrthoLab/MFSDA_Python/blob/master/MFSDA/MFSDA_run.xml
 [MFSDA_selectVariablesPCA]: https://github.com/DCBIA-OrthoLab/MFSDA_Python/blob/master/MFSDA/Resources/Libraries/MFSDA_selectVariablesPCA.py
+
+#### MFSDA_selectVariablesPCA.py
+
+Helper script for variable selection using pearson correlations with principal components (PCA).
+Runs PCA in the dataset and selects the first 'n' first principal components. 
+A correlation analysis is done with each variable in the dataset and the principal components.
+This analysis will give you an idea how correlated each variable is to the principal component, in other words, 
+how much does each variable contribute to the principal components. Ideally, when running MFSDA, you should select variables 
+that are not correlated or select variables that contribute to different principal components. 
+
+##### Required inputs
+
+###### csv
+
+Input table with header row (covariate names). One row per subject. 
+
+###### ouput
+
+Output directory. It will generate a pdf file with the plots and a set of json and csv files with outputs of the analysis, i.e., the percentage of contribution for each variable to the principal component. 
+
+
+#### MFSDA/MFSDA_run.py
+
+This is the main script of the application to run the Multivariate Functional Shape Data Analysis. 
+
+##### Required inputs
+
+Run the script MFSDA_run.py with flag '-h' or '--help' for more information.
+
+###### shapeData
+
+This is a text file that contains the vtk filenames to the shapes/3D models and the corresponding covariates for each shape. The fields must be separated by ','. The first column must be the filename to the shape. 
+
+###### coordData
+
+This is the template that is used to align the shapes in a common space or spherical mapping. 
+Please check [SPHARM-PDM](https://github.com/NIRALUser/SPHARM-PDM)
+
+###### outputDir
+
+Output directory
+
+#### MFSDA/MFSDA_createShapes.py
+
+Once MFSDA is completed, you may add the resulting pvalues/efit coefficients to a shape from your population. 
+
+##### Required inputs
+
+Run the script MFSDA_createShapes.py with flag '-h' or '--help' for more information.
+
+###### shape
+
+Input vtk shape/3D model.
+
+###### pvalues
+
+Resulting pvalues json file from MFSDA_run.
+
+###### efit
+
+Resulting efit json file from MFSDA_run.
+
+###### covariates
+
+Covariate names, ex. '--covariates age gender group var1'. These names are used to add arrays to the .vtk file. You can later visualize them in '3DSlicer' or 'ShapePopulationViewer'
+
+###### output
+
+Output vtk file. 
 
 
 ## History
