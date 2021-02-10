@@ -6,7 +6,7 @@
   <version>1.0.0</version>
 
 
-  <contributor>Loic Michoud,Mateo Lopez (UNC)</contributor>
+  <contributor>Loic Michoud,Mateo Lopez (UNC), Jared Vicory, Jean-Christophe Fillion-Robin (Kitware)</contributor>
 
   <parameters>
     <label>IO</label>
@@ -43,4 +43,3 @@
     </directory>
   </parameters>
 </executable>
-
